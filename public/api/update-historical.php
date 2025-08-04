@@ -15,33 +15,44 @@ App::init();
 
 // Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    ob_clean();
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+    exit;
+}
+
+$symbol = $_POST['symbol'] ?? $_GET['symbol'] ?? '';
+
+if (empty($symbol)) {
+    ob_clean();
+    echo json_encode(['success' => false, 'error' => 'Symbol parameter required']);
     exit;
 }
 
 try {
     $apiService = new YahooFinanceAPI();
     
-    // Update prices for all portfolio stocks
-    $updated = $apiService->updatePortfolioStockPrices();
+    // Update historical data for the specific symbol
+    $updated = $apiService->updateHistoricalData($symbol);
     
-    // Clean any buffered output and send JSON
     ob_clean();
     echo json_encode([
         'success' => true,
+        'symbol' => $symbol,
         'updated' => $updated,
-        'message' => "Updated $updated stock prices"
+        'message' => "Updated historical data for $symbol"
     ]);
     
 } catch (Exception $e) {
-    App::getLogger()->error("Price update API error", ['error' => $e->getMessage()]);
+    App::getLogger()->error("Historical data update API error", [
+        'symbol' => $symbol,
+        'error' => $e->getMessage()
+    ]);
     
-    // Clean any buffered output and send error JSON
     ob_clean();
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'Failed to update prices: ' . $e->getMessage()
+        'error' => 'Failed to update historical data: ' . $e->getMessage()
     ]);
 }

@@ -1,5 +1,8 @@
 <?php
 
+// Start output buffering to prevent any early output
+ob_start();
+
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -12,6 +15,7 @@ App::init();
 
 // Only allow GET requests
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    ob_clean();
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
@@ -20,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 $symbol = $_GET['symbol'] ?? '';
 
 if (empty($symbol)) {
+    ob_clean();
     echo json_encode(['success' => false, 'error' => 'Symbol parameter required']);
     exit;
 }
@@ -31,6 +36,7 @@ try {
     $stock = $apiService->getOrCreateStock($symbol);
     
     if ($stock) {
+        ob_clean();
         echo json_encode([
             'success' => true,
             'quote' => [
@@ -52,6 +58,7 @@ try {
             ]
         ]);
     } else {
+        ob_clean();
         echo json_encode([
             'success' => false,
             'error' => 'Could not fetch stock data'
@@ -64,9 +71,10 @@ try {
         'error' => $e->getMessage()
     ]);
     
+    ob_clean();
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'Failed to fetch stock quote'
+        'error' => 'Failed to fetch stock quote: ' . $e->getMessage()
     ]);
 }

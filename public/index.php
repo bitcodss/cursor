@@ -67,6 +67,14 @@ try {
             require_once __DIR__ . '/api/update-prices.php';
             break;
             
+        case '/api/market-status':
+            require_once __DIR__ . '/api/market-status.php';
+            break;
+            
+        case '/api/update-historical':
+            require_once __DIR__ . '/api/update-historical.php';
+            break;
+            
         case '/setup':
             require_once __DIR__ . '/setup.php';
             break;

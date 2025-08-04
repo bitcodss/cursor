@@ -316,7 +316,7 @@ ob_start();
                 <h5 class="modal-title">Add Transaction</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="/api/add-transaction" method="post" id="transactionForm">
+            <form id="transactionForm" onsubmit="return submitTransaction(event)">
                 <div class="modal-body">
                     <input type="hidden" name="portfolio_id" value="<?php echo $portfolioId; ?>">
                     <input type="hidden" name="csrf_token" value="<?php echo App::generateCsrfToken(); ?>">
@@ -467,7 +467,45 @@ document.addEventListener("DOMContentLoaded", function() {
             element.addEventListener("input", calculateTotal);
         }
     });
-});';
+});
+
+function submitTransaction(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById("transactionForm");
+    const formData = new FormData(form);
+    
+    // Show loading state
+    const submitBtn = form.querySelector("button[type=submit]");
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = "<i class=\"bi bi-spinner\"></i> Adding...";
+    submitBtn.disabled = true;
+    
+    fetch("/api/add-transaction", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert("Transaction added successfully!", "success");
+            bootstrap.Modal.getInstance(document.getElementById("addTransactionModal")).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert("Failed to add transaction: " + (data.error || "Unknown error"), "danger");
+        }
+    })
+    .catch(error => {
+        showAlert("Error adding transaction: " + error.message, "danger");
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+    
+    return false;
+}';
 
 // Asset allocation chart data
 if (!empty($assetAllocation)) {

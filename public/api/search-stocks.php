@@ -1,5 +1,8 @@
 <?php
 
+// Start output buffering to prevent any early output
+ob_start();
+
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -13,6 +16,7 @@ App::init();
 
 // Only allow GET requests
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    ob_clean();
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
@@ -76,6 +80,7 @@ try {
         }
     }
     
+    ob_clean();
     echo json_encode([
         'success' => true,
         'results' => $results
@@ -87,9 +92,10 @@ try {
         'error' => $e->getMessage()
     ]);
     
+    ob_clean();
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'Search failed'
+        'error' => 'Search failed: ' . $e->getMessage()
     ]);
 }
