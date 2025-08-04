@@ -1,19 +1,20 @@
+# public/.htaccess
+<IfModule mod_negotiation.c>
+    Options -MultiViews
+</IfModule>
+
 RewriteEngine On
 
-# API endpoint rewriting - map clean URLs to PHP files
-RewriteRule ^api/add-transaction$ api/add-transaction.php [L]
-RewriteRule ^api/market-status$ api/market-status.php [L]
-RewriteRule ^api/stock-quote$ api/stock-quote.php [L]
-RewriteRule ^api/update-prices$ api/update-prices.php [L]
-RewriteRule ^api/search-stocks$ api/search-stocks.php [L]
-RewriteRule ^api/portfolio-summary$ api/portfolio-summary.php [L]
-RewriteRule ^api/update-historical$ api/update-historical.php [L]
-RewriteRule ^api/debug-test$ api/debug-test.php [L]
-
-# Redirect all other requests to index.php
+# Clean‐URL → .php rewrites for API endpoints
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [QSA,L]
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+?)/?$ $1.php [L]
+
+# Fall back to front-controller
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
 
 # Security headers
 <IfModule mod_headers.c>
