@@ -18,8 +18,13 @@ class App
     public static function init(): void
     {
         // Load environment variables
-        $dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
-        $dotenv->load();
+        try {
+            $dotenv = Dotenv::createImmutable(__DIR__ . '/../../');
+            $dotenv->load();
+        } catch (Exception $e) {
+            // If .env file doesn't exist, use defaults
+            // This prevents fatal errors during API calls
+        }
 
         // Set timezone
         date_default_timezone_set($_ENV['APP_TIMEZONE'] ?? 'America/New_York');
@@ -66,22 +71,28 @@ class App
      */
     private static function initLogger(): void
     {
-        self::$logger = new Logger('portfolio_tracker');
+        // Try to use Monolog if available, otherwise use simple logger
+        if (class_exists('Monolog\Logger')) {
+            self::$logger = new Logger('portfolio_tracker');
 
-        // Create logs directory if it doesn't exist
-        $logDir = dirname(self::$config['log_file']);
-        if (!is_dir($logDir)) {
-            mkdir($logDir, 0755, true);
-        }
+            // Create logs directory if it doesn't exist
+            $logDir = dirname(self::$config['log_file']);
+            if (!is_dir($logDir)) {
+                mkdir($logDir, 0755, true);
+            }
 
-        // Add file handler
-        $fileHandler = new FileHandler(self::$config['log_file'], self::$config['log_level']);
-        self::$logger->pushHandler($fileHandler);
+            // Add file handler
+            $fileHandler = new FileHandler(self::$config['log_file'], self::$config['log_level']);
+            self::$logger->pushHandler($fileHandler);
 
-        // Add console handler for development
-        if (self::$config['debug'] && php_sapi_name() === 'cli') {
-            $streamHandler = new StreamHandler('php://stdout', self::$config['log_level']);
-            self::$logger->pushHandler($streamHandler);
+            // Add console handler for development
+            if (self::$config['debug'] && php_sapi_name() === 'cli') {
+                $streamHandler = new StreamHandler('php://stdout', self::$config['log_level']);
+                self::$logger->pushHandler($streamHandler);
+            }
+        } else {
+            // Fallback to simple logger
+            self::$logger = new SimpleLogger();
         }
     }
 

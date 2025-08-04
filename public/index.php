@@ -1,6 +1,11 @@
 <?php
 
-require_once __DIR__ . '/../vendor/autoload.php';
+// Try composer autoloader first, fallback to manual
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+} else {
+    require_once __DIR__ . '/../autoload.php';
+}
 
 use PortfolioTracker\Config\App;
 use PortfolioTracker\Config\Database;
@@ -73,6 +78,10 @@ try {
             
         case '/api/update-historical':
             require_once __DIR__ . '/api/update-historical.php';
+            break;
+            
+        case '/api/debug-test':
+            require_once __DIR__ . '/api/debug-test.php';
             break;
             
         case '/setup':

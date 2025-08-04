@@ -5,7 +5,12 @@ ob_start();
 
 header('Content-Type: application/json');
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+// Try composer autoloader first, fallback to manual
+if (file_exists(__DIR__ . '/../../vendor/autoload.php')) {
+    require_once __DIR__ . '/../../vendor/autoload.php';
+} else {
+    require_once __DIR__ . '/../../autoload.php';
+}
 
 use PortfolioTracker\Config\App;
 
